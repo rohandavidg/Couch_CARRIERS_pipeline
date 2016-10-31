@@ -145,7 +145,7 @@ def create_dataframe():
     df['percent_realigned_reads'] = df['percent_realigned_reads'].str.strip("()")
     df['percent_reads_mapped_to_target'] = df['percent_reads_mapped_to_target'].str.strip("()")
     df['absolute_median'] = abs( df['reads_mapped_to_target'] -  df['reads_mapped_to_target'].median())
-    df['standard_deviation'] = abs
+#    df['standard_deviation'] = abs
     df.to_csv('carriers_coverage_absolute_median_results.tsv', index=False, sep='\t', encoding='utf-8')
     print df['reads_mapped_to_target'].median()
 
