@@ -23,12 +23,12 @@ import json
 GATK="/data5/bsi/bictools/alignment/gatk/3.5/GenomeAnalysisTK.jar"
 JAVA="/usr/local/biotools/java/jdk1.7.0_67/bin/java"
 REFERENCE="/data2/bsi/reference/sequence/human/ncbi/37.1/indexed/allchr.fa"
-GENES="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS/SubProjects/CARRIERS_genes_txt.refgene.sort"
+#GENES="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS/SubProjects/CARRIERS_genes_txt.refgene.sort"
 INTERVALS="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS/SubProjects/CARRIERS_targets.sort.exons.bed"
 CAPTURE_BED="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS_PANC.targets.bed"
 QSUB="/home/oge/ge2011.11/bin/linux-x64/qsub"
 SAMTOOLS="/data5/bsi/epibreast/m087494.couch/Scripts/Progams/bin/samtools"
-
+GENES="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS/SubProjects/CARRIERS_genes_txt.refgene.sort.withoutheader.chr.ordered"
 
 def main():
     args = parse_args()
@@ -39,7 +39,7 @@ def run(bam_path):
 #    flagstat_out = get_flagstats(bam_path)
 #    flagstat_to_json = convert_flagstat(flagstat_out)
     create_depth_of_coverage = run_dept_coverage(bam_path)
-    run_countReads = count_reads(bam_path)
+#    run_countReads = count_reads(bam_path)
 
 
 def parse_args():
@@ -111,7 +111,7 @@ def run_dept_coverage(bam_path):
             output_file = "CARRIERS_depth_of_coverage.txt"
             output_file_path = coverage_dir + "/" + output_file
 #            chrom_variant_list.append(output_file_path)
-            fout.write(job_string + " ".join(str(i) for i in bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 30 --summaryCoverageThreshold 40 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES)
+            fout.write(job_string + " ".join(str(i) for i in bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 30 --summaryCoverageThreshold 40 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 --summaryCoverageThreshold 150 --summaryCoverageThreshold 200 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES + " -omitBaseOutput")
         
 
 def count_reads(bam_path):
