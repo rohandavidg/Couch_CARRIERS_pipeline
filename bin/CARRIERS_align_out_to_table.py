@@ -23,7 +23,8 @@ def main():
 
 
 def run(align_out_list):
-    coverage_table_dict = align_out_parse(align_out_list)
+    coverage_table_dict, carrier_run_lanes = align_out_parse(align_out_list)
+    write_out_bam_list_by_lane = generate_lane_bam_list(coverage_table_dict, carrier_run_lanes)
     create_dataframe_output = create_table(coverage_table_dict)
 
 def parse_args():
@@ -40,12 +41,14 @@ def parse_args():
 
 def align_out_parse(align_out_list):
     metrics_table_dict = defaultdict(list)
+    run_lanes = set()
     for raw_path in align_out_list:
         raw_line = raw_path.strip()
         carrier_sample = get_sample_name(raw_line)
         with open(raw_line) as fin:
             line = fin.readlines()
             lanes = line[1].strip()
+            run_lanes.add(lanes)
             Indexes = line[3].strip()
             TotalReads = line[5].strip()
             TotalMappedReads = line[7].strip()
@@ -54,7 +57,7 @@ def align_out_parse(align_out_list):
             ReadsInCaptureRegion = line[13].strip()
             metrics_table_dict[carrier_sample] = [lanes, Indexes, TotalReads, TotalMappedReads,
                                                   DuplicateReads, RealignedReads, ReadsInCaptureRegion]
-    return metrics_table_dict
+    return metrics_table_dict, run_lanes
 
 
 def get_sample_name(some_path):
@@ -63,6 +66,11 @@ def get_sample_name(some_path):
     sample_name = s_sample.split("_")[1]
     return sample_name
 
+
+def generate_lane_bam_list(metrics_table_dict, run_lanes):
+    for key, value in metrics_table_dict.items():
+        if value[0] == run_lanes[0]:
+            
 
 def create_table(metrics_table_dict):
     with open("CARRIERS_coverage_metric.tsv", "wa+") as fout:
