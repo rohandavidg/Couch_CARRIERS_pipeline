@@ -51,12 +51,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-p', dest='mayo_panel_primer',
                        help='mayo panel primer excel file',
-                       required=True)
+                       default="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/Mayo_panel_primer.xlsx")
     parser.add_argument('-l', dest='list_bam', type=argparse.FileType('r'),
                         help="list of bams in the run",
                         required=True)
     parser.add_argument('-b', dest='annotated_bed',
-                        help='CARRIERS annoated bed file', required=True)
+                        help='CARRIERS annoated bed file',
+                        default="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS_PANC.targets.annotated.bed")
     args = parser.parse_args()
     return args
 

@@ -46,9 +46,10 @@ def run(bam_path, bam_path_list, lane):
         pass
     if bam_path_list:
         lane_bam_path, coverage_path = bam_path_lane(bam_path_list)
-        print lane_bam_path
         create_depth_of_coverage = run_dept_coverage(lane_bam_path, coverage_path, lane)        
-#    run_countReads = count_reads(bam_path)
+    else:
+        pass
+
 
 
 def parse_args():
@@ -91,8 +92,6 @@ def get_flagstats(bam_path):
             sam_cmd, err = p.communicate()
     return flagstat_list
 
-
-#def convert_flagstat(flagstat_list)
 
 def get_bam_list(bam_path):
     bam_list = []
@@ -137,7 +136,6 @@ def run_dept_coverage(some_bam_list, coverage_dir, lane):
         else:
             os.makedirs(lane_dir)
         script_name = lane_dir + "/" + "run_depth_of_coverage" + lane +".sh"
-        print some_bam_list
         with open(script_name, 'wa+') as fout:
             fout.write("#/bin/bash" + "\n")
             fout.write('\n')

@@ -41,8 +41,8 @@ def run(mayo_panel_primer, bam_path, annotated_bed, sample_info, bam_list):
     region_pos_annotation_dict = parse_annotated_bed_file(samtools_loc5_position, annotated_bed)
     if bam_path:
         primer_performance_dict, run_sample_name = calculate_loc5_count(bam_path,
-                                                                     samtools_loc5_position)
-    
+                                                                     samtools_loc5_position)    
+        print primer_performance_dict
         intermidiate_file =  generate_output(run_sample_name, primer_performance_dict,
                                              region_pos_annotation_dict, sample_name_lanes_dict)
         primer_count_file = write_out_primer_count(run_sample_name, sample_name_lanes_dict, temp_outfile)
@@ -92,7 +92,7 @@ def parse_primer(primer_file):
 #    df_out['primer_gc_count'] = df_out['primer'].map(gc_count_dict)
     result = df_out.loc[:,('chrom', 'loc5', 'loc3', 'strand','primer')]
     mayo_loc5 = result.loc[:,['chrom', 'loc5', 'strand']]
-    tsv_outfile = 'qiagen_primer_24_samples_gc' + str(randint(0,9)) + ".tsv"
+    tsv_outfile = 'qiagen_primer_24_samples_gc' + str(randint(0,100000)) + ".tsv"
     loc5_querry = mayo_loc5['chrom'].map(str) + ":" + mayo_loc5['loc5'].map(str)
     result.to_csv(tsv_outfile, index=False, sep='\t', encoding='utf-8')
     loc5_list = loc5_querry.tolist()
@@ -130,7 +130,7 @@ def calculate_loc5_count_all(bam_list, loc5_list):
 
 
 def create_temp_bed_file(loc5_list, annotated_bed):
-    a = randint(0,9)
+    a = randint(0,100000)
     temp_file = "temp_" + str(a) + ".bed"
     with open(temp_file, 'wa') as fout:
         for pos in loc5_list:
@@ -189,25 +189,24 @@ def get_lanes_from_sample_info(sample_info):
 
 
 def generate_output(sample_names, sample_loc5_count, pos_annotate_dict, sample_name_lane_dict):
-#    print sample_names
     with open ('outfile_' + sample_names + "_L" + sample_name_lane_dict[sample_names] +'.txt', 'wb') as fout:
-        fout.write("loc5\ttarget_gene\t" + sample_names + "\n")
+        fout.write("loc5\ttarget_gene\tlane\t" + sample_names + "\n")
         for key, value in pos_annotate_dict.items():
             if sample_loc5_count[key]:
                 primer_count =  sample_loc5_count[key]
-                fout.write(str(key) + "\t" + str(value) + "\t" +  sample_name_lane_dict[sample_names] + "\t".join([str(v) for k in primer_count for key, v in k.items() if key in sample_names]) + "\n")
+                fout.write(str(key) + "\t" + str(value) + "\t" +  sample_name_lane_dict[sample_names] + "\t" + "\t".join([str(v) for k in primer_count for key, v in k.items() if key in sample_names]) + "\n")
 
 
 def write_out_primer_count(sample_name, sample_name_lane_dict, tsv_outfile):
-#    print sample_name
     primer_count_result =  os.path.abspath('outfile_' + sample_name + "_L" + sample_name_lane_dict[sample_name]+ '.txt')
+    print primer_count_result
     primer_metrics = os.path.abspath(tsv_outfile)
     df_a = pd.DataFrame.from_csv(primer_count_result, sep='\t', index_col=None)
-#    print df_a
+    print df_a
     df_b =  pd.DataFrame.from_csv(primer_metrics, sep='\t',index_col=None)
+#    print df_b
     headers_a = df_a.dtypes.index
     headers_b = df_b.dtypes.index
-
     new_df = pd.merge(df_b, df_a, on='loc5')
     new_df.to_csv('CARRIERS_'+ sample_name + '_L' + sample_name_lane_dict[sample_name] + '_results.tsv', index=False, sep='\t', encoding='utf-8')
 #    os.remove('qiagen_primer_24_samples_gc.tsv')
@@ -219,12 +218,11 @@ def generate_output_all(sample_names, sample_loc5_count,  pos_annotate_dict, sam
     with open ('outfile.txt', 'wb') as fout:
         fout.write("loc5\ttarget_seq\ttarget_gene\t" + "\t".join(str(i) for i in sample_names) + "\n")
         for key, value in pos_annotate_dict.items():
-#        if region_seq_dict[key]:# and sample_loc5_count[key]:
             if sample_loc5_count[key]:
                 primer_count = sample_loc5_count[key]
 #                print str(key) + "\t" + str(value) + "\t" + "\t".join([str(v) for k in primer_count for key, v in k.items() if key in sample_names]) + "\n"
                 fout.write(str(key) + "\t" + str(value) + "\t" + "\t".join([str(v) for k in primer_count for key, v in k.items() if key in sample_names]) + "\n")
-
+                
 
 def write_out_primer_count_all(tsv_outfile):
     primer_count_result =  os.path.abspath('outfile.txt')

@@ -24,7 +24,7 @@ def main():
 
 def run(align_out_list):
     coverage_table_dict, carrier_run_lanes = align_out_parse(align_out_list)
-    write_out_bam_list_by_lane = generate_lane_bam_list(coverage_table_dict, carrier_run_lanes)
+#    write_out_bam_list_by_lane = generate_lane_bam_list(coverage_table_dict, carrier_run_lanes)
     create_dataframe_output = create_table(coverage_table_dict)
 
 def parse_args():
@@ -67,9 +67,9 @@ def get_sample_name(some_path):
     return sample_name
 
 
-def generate_lane_bam_list(metrics_table_dict, run_lanes):
-    for key, value in metrics_table_dict.items():
-        if value[0] == run_lanes[0]:
+#def generate_lane_bam_list(metrics_table_dict, run_lanes):
+#    for key, value in metrics_table_dict.items():
+#        if value[0] == run_lanes[0]:
             
 
 def create_table(metrics_table_dict):
