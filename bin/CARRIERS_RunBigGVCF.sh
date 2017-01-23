@@ -29,7 +29,7 @@ do
     esac
 done
 
-MEM="-l h_vmem=48G"
+MEM="-l h_vmem=32G"
 QUE="-q ngs-sec -l medp=TRUE"
 #QUE="-q lg-mem"
 
@@ -44,7 +44,7 @@ fi
 BEDTOOLS=/data5/bsi/epibreast/m087494.couch/Scripts/Progams/bin/bedtools
 export JAVA7="/usr/local/biotools/java/jdk1.7.0_03/bin"
 export REF_GENOME="/data2/bsi/reference/sequence/human/ncbi/hg19/allchr.fa"
-export GenotypeGVCFs_JVM="-XX:CompileThreshold=1000 -XX:ReservedCodeCacheSize=256m -Xmx38g -Xms8g"
+export GenotypeGVCFs_JVM="-XX:CompileThreshold=1000 -XX:MaxHeapFreeRatio=70 -XX:ReservedCodeCacheSize=256m -Xmx58g -Xms8g"
 export GATK="/data5/bsi/bictools/alignment/gatk/3.4-46/"
 export THREADS="1"  # Better memory effiency
 export gatk_param="-R $REF_GENOME -et NO_ET -K $GATK/Hossain.Asif_mayo.edu.key"		
@@ -62,7 +62,7 @@ function set_intervals {
 	echo "Make Dir & Split Intervals"
 	mkdir intervals
 	cd intervals
-	split -a 4 -d -l 100 ../target.wide.bed target_
+	split -a 4 -d -l 30 ../target.wide.bed target_
 	for file in *; do mv $file $file.bed; done
 	cd ../
     fi
@@ -76,7 +76,7 @@ function run_gatk {
 	outputvcf="$f.vcf.gz"; 
 	range="-L $OUT_DIR/$file"
 	#echo "
-	qsub -e $OUT_DIR/.custom_logs -o $OUT_DIR/.custom_logs $QUE -N GVCF_$f -m a -M gnanaolivu.rohandavid@mayo.edu -l h_stack=20M -V -cwd $MEM -b y $JAVA7/java $GenotypeGVCFs_JVM -Djava.io.tmpdir=$output/temp/ -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs -V $gvcfList -nt $THREADS -o $output/$outputvcf $range $gatk_param
+	qsub -e $OUT_DIR/logs -o $OUT_DIR/logs $QUE -N GVCF_$f -m a -M gnanaolivu.rohandavid@mayo.edu -l h_stack=20M -pe threaded 2 -V -cwd $MEM -b y $JAVA7/java $GenotypeGVCFs_JVM -Djava.io.tmpdir=$output/temp/ -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs -V $gvcfList -nt $THREADS -o $output/$outputvcf $range $gatk_param
 	/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/4.0.1/check_qstat.sh $TOOLINFO 2000
     done
 }
@@ -90,8 +90,17 @@ elif [ $# -lt 3 ];then
     exit 1
 else
     if [ -d $OUT_DIR ];then
-	set_intervals
-	run_gatk
+	cd $OUT_DIR
+	if [ ! -d logs ];then
+	    mkdir logs
+	    set_intervals
+	    run_gatk	    
+	else
+	    rm -rf logs
+	    mkdir logs
+	    set_intervals
+	    run_gatk	    	    
+	fi
     else
 	echo "$OUT_DIR doesnt exist"
     fi
