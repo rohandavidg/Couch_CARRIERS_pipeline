@@ -41,6 +41,7 @@ done
 
 LOGS_DIR=$OUTDIR/primer_analysis/logs
 PRIMER_DIR=$OUTDIR/primer_analysis
+echo $SAMPLE_INFO
 
 function create_directory {
     if [ -d $OUTDIR ];then

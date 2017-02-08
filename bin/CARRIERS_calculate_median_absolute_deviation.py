@@ -44,7 +44,7 @@ def run(submission_excel_list, stats_file, ggps_coverage_file):
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-i', dest='ggps_coverage_file',
+    parser.add_argument('-i', dest='ggps_coverage_file', nargs='+',
                         help="coverage table in the index.html in tsv format",
                         required=True)
     parser.add_argument('-l', dest='submission_excel_list', nargs="+",
@@ -74,31 +74,32 @@ def parse_file(input_file):
     sample_reads_mapped_dict = {}
     reads_mapped_dict  = {}
     reads_mapped_list = []
-    with open(input_file) as fin:
-        next(fin)
-        for raw_line in fin:
-            line = raw_line.strip().split("\t")
-            reads_maped_to_target = line[-1].split(" ")[0]
-            reads_maped = reads_maped_to_target.replace(",","")
-            reads_mapped_list.append(reads_maped)
-            sample = line[0]
-            total_reads = line[1]
-            TotalMappedReads = line[2].split(" ")[0]
-            total_reads_per =  line[2].split(" ")[1]            
-            RealignedReads = line[4].split(" ")[0]
-            RealignedReads_per = line[4].split(" ")[1]
-            try:
-                ReadsInCaptureRegion = line[5].split(" ")[0]
-                ReadsInCaptureRegion_per = line[5].split(" ")[1]
-                sample_reads_mapped_dict[sample] = [total_reads, TotalMappedReads, total_reads_per,RealignedReads,
-                                                    RealignedReads_per, ReadsInCaptureRegion, ReadsInCaptureRegion_per]
-                reads_mapped_dict[sample] = reads_maped            
-            except IndexError:
-                ReadsInCaptureRegion = "-"
-                ReadsInCaptureRegion_per = "-"
-                sample_reads_mapped_dict[sample] = [total_reads, TotalMappedReads, total_reads_per,RealignedReads,
-                                                    RealignedReads_per, ReadsInCaptureRegion, ReadsInCaptureRegion_per]
-                reads_mapped_dict[sample] = reads_maped
+    for some_file in input_file:
+        with open(some_file) as fin:
+            next(fin)
+            for raw_line in fin:
+                line = raw_line.strip().split("\t")
+                reads_maped_to_target = line[-1].split(" ")[0]
+                reads_maped = reads_maped_to_target.replace(",","")
+                reads_mapped_list.append(reads_maped)
+                sample = line[0]
+                total_reads = line[1]
+                TotalMappedReads = line[2].split(" ")[0]
+                total_reads_per =  line[2].split(" ")[1]            
+                RealignedReads = line[4].split(" ")[0]
+                RealignedReads_per = line[4].split(" ")[1]
+                try:
+                    ReadsInCaptureRegion = line[5].split(" ")[0]
+                    ReadsInCaptureRegion_per = line[5].split(" ")[1]
+                    sample_reads_mapped_dict[sample] = [total_reads, TotalMappedReads, total_reads_per,RealignedReads,
+                                                        RealignedReads_per, ReadsInCaptureRegion, ReadsInCaptureRegion_per]
+                    reads_mapped_dict[sample] = reads_maped            
+                except IndexError:
+                    ReadsInCaptureRegion = "-"
+                    ReadsInCaptureRegion_per = "-"
+                    sample_reads_mapped_dict[sample] = [total_reads, TotalMappedReads, total_reads_per,RealignedReads,
+                                                        RealignedReads_per, ReadsInCaptureRegion, ReadsInCaptureRegion_per]
+                    reads_mapped_dict[sample] = reads_maped
     return reads_mapped_dict, sample_reads_mapped_dict, reads_mapped_list
 
 

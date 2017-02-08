@@ -33,11 +33,11 @@ sortbed = "/data5/bsi/epibreast/m087494.couch/Scripts/Progams/bin/sortBed"
 
 def main():
     args = parse_args()
-    run(args.mayo_panel_primer, args.bam_path, args.annotated_bed, args.sample_info, args.bam_list)
+    run(args.mayo_panel_primer, args.bam_path, args.annotated_bed, args.sample_info_list, args.bam_list)
 
-def run(mayo_panel_primer, bam_path, annotated_bed, sample_info, bam_list):
+def run(mayo_panel_primer, bam_path, annotated_bed, sample_info_list, bam_list):
     samtools_loc5_position, temp_outfile =  parse_primer(mayo_panel_primer)
-    sample_name_lanes_dict = get_lanes_from_sample_info(sample_info)
+    sample_name_lanes_dict = get_lanes_from_sample_info(sample_info_list)
     region_pos_annotation_dict = parse_annotated_bed_file(samtools_loc5_position, annotated_bed)
     if bam_path:
         primer_performance_dict, run_sample_name = calculate_loc5_count(bam_path,
@@ -67,7 +67,7 @@ def parse_args():
                         help="bam path")
     parser.add_argument('-b', dest='annotated_bed',
                         help='CARRIERS annoated bed file', default="/data5/bsi/epibreast/m087494.couch/Couch/Huge_Breast_VCF/CARRIERS_PANC.targets.annotated.bed")
-    parser.add_argument('-s', dest='sample_info', type=argparse.FileType('r'),
+    parser.add_argument('-s', dest='sample_info_list', nargs='+',
                         help='sample info from the ggps run')
     parser.add_argument('-B', dest='bam_list', type=argparse.FileType('r'),
                        help="bam file with list of bams")
@@ -173,18 +173,20 @@ def run_closedBet(output_file, annotated_bed):
     return pos_annotate_dict
 
 
-def get_lanes_from_sample_info(sample_info):
+def get_lanes_from_sample_info(sample_info_list):
     sample_name_lane_dict = {}
-    for raw_line in sample_info:
-        line = raw_line.strip().split("\t")
-        sample_fastq = line[0].split(":")[1]
-        sample_name = sample_fastq.split("=")[0]
-        fastq = sample_fastq.split("=")[1]
-        flowcell_lane_index =  fastq.split(".")[1]
-        m = re.search('_L(.+?)_', flowcell_lane_index)
-        if m:
-            lane = m.group(1)
-            sample_name_lane_dict[sample_name] = lane
+    for sample_info in sample_info_list:
+        with open(sample_info) as fin:
+            for raw_line in fin:
+                line = raw_line.strip().split("\t")
+                sample_fastq = line[0].split(":")[1]
+                sample_name = sample_fastq.split("=")[0]
+                fastq = sample_fastq.split("=")[1]
+                flowcell_lane_index =  fastq.split(".")[1]
+                m = re.search('_L(.+?)_', flowcell_lane_index)
+                if m:
+                    lane = m.group(1)
+                    sample_name_lane_dict[sample_name] = lane
     return sample_name_lane_dict
 
 

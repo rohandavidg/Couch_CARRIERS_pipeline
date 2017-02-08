@@ -10,14 +10,17 @@ function create_combined_primer {
     OUT_FILE=$2
     cd $OUTPUT
     FIRST_FILE=`ls CARRIERS*.tsv | head -1`
-    NEW_OUT=`cat $FIRST_FILE | cut -f1-8 > $CURRENT_DIR/$OUT_FILE`
+    echo $FIRST_FILE
+    NEW_OUT=`cat $FIRST_FILE | cut -f1-7 > $CURRENT_DIR/$OUT_FILE`
     echo $NEW_OUT
     TEMP_FILE=$CURRENT_DIR/test.tmp
+#    tsv_array=`ls CARRIERS*.tsv`
     for file in `ls CARRIERS*.tsv`;
     do 
 	echo $file
 	FIRST=`cat $file | cut -f8 | paste $CURRENT_DIR/$OUT_FILE - > $TEMP_FILE`
 	echo $FIRST
+	echo mv -f $TEMP_FILE $OUT_FILE
 	mv -f $TEMP_FILE $OUT_FILE
     done
 }
