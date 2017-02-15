@@ -40,7 +40,7 @@ def run(bam_path, bam_path_list, lane, project):
 #    flagstat_out = get_flagstats(bam_path)
 #    flagstat_to_json = convert_flagstat(flagstat_out)
     if bam_path:
-        all_bam_path, coverage_path = get_bam_list(bam_path)
+        all_bam_path, coverage_path = bam_path_ggps(bam_path)
         if project == 'all':
             create_depth_of_coverage = run_dept_coverage_all(all_bam_path, lane)
         else:
@@ -48,8 +48,8 @@ def run(bam_path, bam_path_list, lane, project):
     else:
         pass
     if bam_path_list:
-        lane_bam_path, coverage_path = bam_path_lane(bam_path_list)
-        if project == 'all':
+        lane_bam_path, coverage_path = get_bam_all(bam_path_list)
+        if project == 'all' or project == 'ALL':
             create_depth_of_coverage = run_dept_coverage_all(lane_bam_path, lane)
         else:
             create_depth_of_coverage = run_dept_coverage(lane_bam_path, coverage_path, lane)
@@ -62,12 +62,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-b', dest='bam_path',
                         help="path to the ggps bam directory")
-    parser.add_argument('-B', dest='bam_path_list',
-                        help="list of bams",  type=argparse.FileType('r'))
-    parser.add_argument('-l', dest='lane',
-                       help='flowcell lane')
-    parser.add_argument('-a', dest='project',
-                        help='when running for all bams in project')
+    parser.add_argument('-B', dest='bam_path_list', help="list of bams")#, type=argparse.FileType('r'))
+    parser.add_argument('-l', dest='lane', help='flowcell lane', required=True)
+    parser.add_argument('-a', dest='project', help='when running for all bams in project')
     args = parser.parse_args()
     return args
 
@@ -80,7 +77,7 @@ def get_bam_files(bam_path):
                 bam = root + "/" + name
                 yield bam
 
-
+ 
 def get_flagstats(bam_path):
     flagstat_list = []
     bam_gen = get_bam_files(bam_path)
@@ -101,28 +98,29 @@ def get_flagstats(bam_path):
     return flagstat_list
 
 
-def get_bam_list(bam_path):
+def get_bam_all(bam_path_list):
     bam_list = []
-    if bam_path:
-        bam_dir = os.path.dirname(bam_path)
-        run_dir = "/".join(bam_dir.split("/")[:-1])
-        coverage_dir = run_dir + "/" + "coverage"
-        for bam in bam_gen:
-            bam_list.append(" -I " + bam)
+    bam_dir = os.path.dirname(bam_path_list)
+    run_dir = "/".join(bam_dir.split("/")[:-1])
+    coverage_dir = run_dir + "/" + "coverage"
+    with open(bam_path_list, 'r') as bpin:
+        for bam in bpin:
+            new_bam = bam.strip()
+            bam_list.append(new_bam)
 
-        if os.path.isdir(coverage_dir):
-            pass
-        else:
-            os.makedirs(coverage_dir)
-        return bam_list, coverage_dir
+    if os.path.isdir(coverage_dir):
+        pass
+    else:
+        os.makedirs(coverage_dir)
+    return bam_list, coverage_dir
 
 
-def bam_path_lane(bam_path_list):
+def bam_path_ggps(bam_path):
     bam_path_lane_list = []
-    for bam in bam_path_list:
-#        print bam
+    bam_file = get_bam_files(bam_path)
+    for bam in bam_file:
         bam_dir = os.path.dirname(bam)
-#        print bam_dir
+        #        print bam_dir
         run_dir = "/".join(bam_dir.split("/")[:-1])
         coverage_dir = run_dir + "/" + "coverage"        
 #        print coverage_dir
@@ -148,20 +146,20 @@ def run_dept_coverage(some_bam_list, coverage_dir, lane):
             fout.write("#/bin/bash" + "\n")
             fout.write('\n')
             fout.write('#$ -q 7-days' + '\n')
-            fout.write('#$ -l h_vmem=5G' + '\n')
+            fout.write('#$ -l h_vmem=10G' + '\n')
             fout.write('#$ -pe threaded 16' + '\n')
             fout.write('#$ -M gnanaolivu.rohandavid@mayo.edu' + '\n')
             fout.write('#$ -m ae' + '\n')
             fout.write('#$ -V' + '\n')
             fout.write('#$ -cwd' + '\n')
             fout.write('#$ -N gatk_depth_of_coveage'+lane + '\n')
-            job_string = JAVA + " -Xmx24g -jar " + GATK + " -T DepthOfCoverage -L " + INTERVALS + " -R " + REFERENCE 
+            job_string = JAVA + " -Xmx44g -jar " + GATK + " -T DepthOfCoverage -L " + INTERVALS + " -R " + REFERENCE + " "
             fout.write('\n')
             output_file = "CARRIERS_depth_of_coverage.txt"
             output_file_path = lane_dir + "/" + output_file
         #            chrom_variant_list.append(output_file_path)
             if some_bam_list:
-                fout.write(job_string + " ".join(str(i) for i in some_bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 30 --summaryCoverageThreshold 40 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 --summaryCoverageThreshold 150 --summaryCoverageThreshold 200 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES + " -omitBaseOutput --omitDepthOutputAtEachBase --omitLocusTable")
+                fout.write(job_string + " -I " + " -I ".join(str(i) for i in some_bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 --summaryCoverageThreshold 150 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES + " -omitBaseOutput --omitDepthOutputAtEachBase --omitLocusTable")
             else:
                 pass
     else:
@@ -189,13 +187,13 @@ def run_dept_coverage_all(some_bam_list, lane):
             fout.write('#$ -V' + '\n')
             fout.write('#$ -cwd' + '\n')
             fout.write('#$ -N gatk_depth_of_coveage'+lane + '\n')
-            job_string = JAVA + " -Xmx24g -jar " + GATK + " -T DepthOfCoverage -L " + INTERVALS + " -R " + REFERENCE 
+            job_string = JAVA + " -Xmx44g -jar " + GATK + " -T DepthOfCoverage -L " + INTERVALS + " -R " + REFERENCE + " " 
             fout.write('\n')
             output_file = "CARRIERS_depth_of_coverage.txt"
             output_file_path = lane_dir + "/" + output_file
         #            chrom_variant_list.append(output_file_path)
             if some_bam_list:
-                fout.write(job_string + " ".join(str(i) for i in some_bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 30 --summaryCoverageThreshold 40 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 --summaryCoverageThreshold 150 --summaryCoverageThreshold 200 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES + " -omitBaseOutput --omitDepthOutputAtEachBase --omitLocusTable")
+                fout.write(job_string + " -I " + " -I ".join(str(i) for i in some_bam_list) + " -o " + output_file + " --summaryCoverageThreshold 1 --summaryCoverageThreshold 10 --summaryCoverageThreshold 20 --summaryCoverageThreshold 50 --summaryCoverageThreshold 100 --summaryCoverageThreshold 150 -dt NONE --calculateCoverageOverGenes:REFSEQ " + GENES + " -omitBaseOutput --omitDepthOutputAtEachBase --omitLocusTable")
             else:
                 pass
     else:

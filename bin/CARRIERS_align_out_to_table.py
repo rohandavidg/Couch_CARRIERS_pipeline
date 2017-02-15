@@ -97,14 +97,15 @@ def get_lanes_from_sample_info(sample_info_list):
         with open(sample_info) as fin:
             for raw_line in fin:
                 line = raw_line.strip().split("\t")
-#                print line
                 sample_fastq = line[0].split(":")[1]
                 sample_name = sample_fastq.split("=")[0]
                 fastq = sample_fastq.split("=")[1]
                 flowcell_lane_index =  fastq.split(".")[1]
                 flowcell = fastq.split(".")[1].split('_')[0][2:]
-                index_string = flowcell_lane_index.split("_")[3]
-                index = index_string[1:]
+                index_string = flowcell_lane_index.split("_")[2:4]
+                new_m = [re.match(r'^[A-Z]+(-[A-Z]+)$', i) for i in index_string]
+                new_m = [x for x in new_m if x is not None]
+                index = new_m[0].group(0)
                 m = re.search('_L(.+?)_', flowcell_lane_index)
                 if m:
                     lane = m.group(1)
@@ -128,14 +129,18 @@ def merge_lane_reads(sample_name_lane_dict, sample_reads_mapped_dict):
 def compute_mad(CNV_txt_list):
     CNV_mad_score = {}
     for cnv_file in CNV_txt_list:
+        sample = os.path.basename(cnv_file).split('(')[0]
+        sample_name = sample.split('_')[1]
         filename = cnv_file.strip()
         base = os.path.basename(filename).split("(")[0].strip()
         sample_name = base.split("_")[1]
         df = pd.read_csv(filename, sep='\t')
+        new_df = df.loc[(df['SNR.db'] >= 20) & (df['pval'] <= 0.05) & (abs(df['CNV.log2ratio']) >= 0.5)] 
+        new_df['sample'] = sample_name
+        new_df.to_csv('CNV_out.tsv', sep='\t', mode='a', header=False, index=False)
         df['absolute_deviation'] = abs(df['CNV.log2ratio'] - df['CNV.log2ratio'].median())
         median_absolute_deviation = df['absolute_deviation'].median()
-        CNV_mad_score[sample_name] = round(median_absolute_deviation,6)
-#        print 'CNV-' + sample_name
+        CNV_mad_score[sample_name] = round(median_absolute_deviation, 6)
     return CNV_mad_score
 
 

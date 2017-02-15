@@ -97,12 +97,5 @@ else
     run_primer_analysis
     STUNT=`echo $JobIds | rev | cut -d"," -f1-140 | rev`
     sleep 10m
-#    PRIMER_OUT_NUMBER=`ls $OUTDIR/primer_analysis/working/CARRIERS*_results.tsv | wc -l`
-#    echo $PRIMER_OUT_NUMBER
-#    while [ $PRIMER_OUT_NUMBER -lt $SAMPLE_NUMBER ]
-#    do
-#	echo $PRIMER_OUT_NUMBER
-#	sleep 5
-#    done
     $QSUB -N Primer_merge$RANDOM  -hold_jid $STUNT -V -M gnanaolivu.rohandavid@mayo.edu -wd $OUTDIR/primer_analysis/working -l h_stack=20M -l h_vmem=5G -pe threaded 2 -e $LOGS_DIR -o $PRIMER_DIR -b y /bin/bash $CARRIERS_CONCAT_PRIMER $OUTDIR/primer_analysis/working $OUTPUT_FILENAME
 fi
