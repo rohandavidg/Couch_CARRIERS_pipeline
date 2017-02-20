@@ -140,7 +140,7 @@ def compute_mad(CNV_txt_list):
         new_df.to_csv('CNV_out.tsv', sep='\t', mode='a', header=False, index=False)
         df['absolute_deviation'] = abs(df['CNV.log2ratio'] - df['CNV.log2ratio'].median())
         median_absolute_deviation = df['absolute_deviation'].median()
-        CNV_mad_score[sample_name] = round(median_absolute_deviation, 6)
+        CNV_mad_score[sample_name] = round(median_absolute_deviation, 8)
     return CNV_mad_score
 
 

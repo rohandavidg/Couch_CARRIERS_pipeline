@@ -52,7 +52,7 @@ def run(run_info_list, database_csv_template,
     overal_run_info_dict = create_run_info_dict(run_info_list)
 #    print len(overal_run_info_dict)
     re = get_run_info_values(overal_run_info_dict, database_csv_template, mad_table, primer_performance)
-    
+    print "translate result file to csv and cut -f1,30- to create the database file to upload"
 
 
 def create_run_info_dict(run_info_list):
@@ -65,7 +65,7 @@ def create_run_info_dict(run_info_list):
 
 
 def get_run_info_values(proj_run_info_dict, database_csv_template, mad_table, primer_performance):
-    with open (database_csv_template) as csvfile, open ('out.tsv', 'wb+') as fout:
+    with open (database_csv_template) as csvfile, open ('entire_template_out_with_results.tsv', 'wb+') as fout:
         reader = csv.DictReader(csvfile)
         rfd_header = reader.fieldnames
         headers_to_keep = rfd_header[:29]
@@ -93,10 +93,11 @@ def get_run_info_values(proj_run_info_dict, database_csv_template, mad_table, pr
                                                             '', 'YES', mad_dict[row['CARRIERS ID (carriers_id)']][1],
                                                             mad_dict[row['CARRIERS ID (carriers_id)']][2], 
                                                             mad_dict[row['CARRIERS ID (carriers_id)']][3],
-                                                            mad_dict[row['CARRIERS ID (carriers_id)']][4]]
-#                                                                CARRIERS_primer_range_dict[row['CARRIERS ID (carriers_id)']]]
+                                                            mad_dict[row['CARRIERS ID (carriers_id)']][4],
+                                                            CARRIERS_primer_range_dict[row['CARRIERS ID (carriers_id)']]]
                 fout.write('\t'.join(str(i) for i in out) + '\n')
             except KeyError:
+                print "ERROR: Following samples not in template database"
                 print row['CARRIERS ID (carriers_id)']
 
 
