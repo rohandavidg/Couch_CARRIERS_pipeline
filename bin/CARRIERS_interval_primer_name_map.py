@@ -25,9 +25,9 @@ def parse_args():
     parsing arguments
     """
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('-c', dest='CARRIERS_interval_stats_file', type=argparse.FileType('r'),
+    parser.add_argument('-c', dest='CARRIERS_interval_stats_file',
                         help="interval stat file from depth of coverage", required=True)
-    parser.add_argument('-o', dest='output_dir', type=argparse.FileType('r'),
+    parser.add_argument('-o', dest='output_dir',
                         help='output dir to write output to',
                         required=True)
     parser.add_argument('-n', dest='output_name',

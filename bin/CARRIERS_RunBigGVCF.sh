@@ -76,7 +76,7 @@ function run_gatk {
 	outputvcf="$f.vcf.gz"; 
 	range="-L $OUT_DIR/$file"
 	#echo "
-	qsub -e $OUT_DIR/logs -o $OUT_DIR/logs $QUE -N GVCF_$f -m a -M gnanaolivu.rohandavid@mayo.edu -l h_stack=20M -pe threaded 2 -V -cwd $MEM -b y $JAVA7/java $GenotypeGVCFs_JVM -Djava.io.tmpdir=$output/temp/ -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs -V $gvcfList -nt $THREADS -o $output/$outputvcf $range $gatk_param
+	qsub -e $OUT_DIR/logs -o $OUT_DIR/logs $QUE -N GVCF_$f -M gnanaolivu.rohandavid@mayo.edu -m a -l h_stack=20M -pe threaded 2 -V -cwd $MEM -b y $JAVA7/java $GenotypeGVCFs_JVM -Djava.io.tmpdir=$output/temp/ -jar $GATK/GenomeAnalysisTK.jar -T GenotypeGVCFs -V $gvcfList -nt $THREADS -o $output/$outputvcf $range $gatk_param
 	/projects/bsi/bictools/scripts/dnaseq/GENOME_GPS/tags/4.0.1/check_qstat.sh $TOOLINFO 8000
     done
 }

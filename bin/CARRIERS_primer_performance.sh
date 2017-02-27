@@ -42,6 +42,7 @@ done
 LOGS_DIR=$OUTDIR/primer_analysis/logs
 PRIMER_DIR=$OUTDIR/primer_analysis
 echo $SAMPLE_INFO
+echo $OUTDIR
 
 function create_directory {
     if [ -d $OUTDIR ];then
@@ -80,8 +81,8 @@ function run_primer_analysis {
         fi
 	name=`basename $bam | cut -d"." -f1`
 #	sleep .5
-#	$QSUB -N primer_run_$a -V -M gnanaolivu.rohandavid@mayo.edu -wd $OUTDIR/primer_analysis/working -l h_stack=20M -l h_vmem=5G -pe threaded 2 -e $LOGS_DIR -o $PRIMER_DIR -b y $PYTHON $CARRIERS_PRIMER_CODE -p $TEST_MAYO_EXCEL -b $CARRIERS_TARGET_BED -l $bam -s $SAMPLE_INFO
-	$QSUB -N primer_run_$a -V -M gnanaolivu.rohandavid@mayo.edu -wd $OUTDIR/primer_analysis/working -l h_stack=20M -l h_vmem=5G -pe threaded 2 -e $LOGS_DIR -o $LOGS_DIR -b y $PYTHON $CARRIERS_PRIMER_CODE -p $MAYO_EXCEL -b $CARRIERS_TARGET_BED -l $bam -s $SAMPLE_INFO
+	$QSUB -N primer_run_$a -V -M gnanaolivu.rohandavid@mayo.edu -wd $OUTDIR/primer_analysis/working -l h_stack=20M -l h_vmem=5G -pe threaded 2 -e $LOGS_DIR -o $PRIMER_DIR -b y $PYTHON $CARRIERS_PRIMER_CODE -p $TEST_MAYO_EXCEL -b $CARRIERS_TARGET_BED -l $bam -s $SAMPLE_INFO
+#	echo $QSUB -N primer_run_$a -V -M gnanaolivu.rohandavid@mayo.edu -wd $OUTDIR/primer_analysis/working -l h_stack=20M -l h_vmem=5G -pe threaded 2 -e $LOGS_DIR -o $LOGS_DIR -b y $PYTHON $CARRIERS_PRIMER_CODE -p $MAYO_EXCEL -b $CARRIERS_TARGET_BED -l $bam -s $SAMPLE_INFO
     done
 }
 
