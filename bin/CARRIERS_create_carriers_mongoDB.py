@@ -69,9 +69,9 @@ def parse_mad_file(mad_file):
     reader = csv.DictReader(mad_file, delimiter='\t')
     for row in reader:
         mad_dict[row['sample']] = [row['lanes'], row['flowcell'],
-                                   row['Indexes'], row['TotalReads'],  
-                                   row['RealignedReads'], row['ReadsInCaptureRegion'], 
-                                   row['Absolute_median_deviation'],
+                                   row['Indexes'], int(row['TotalReads']),  
+                                   int(row['RealignedReads']), int(row['ReadsInCaptureRegion']), 
+                                   float(row['Absolute_median_deviation']),
                                    row['sample']]
 
     return mad_dict
@@ -83,9 +83,9 @@ def eval_primer_performance(primer_file):
     df['gene'] = df['target_gene'].str.split('_').str[0]
     df['target'] = df['chrom'] +':' + df['loc5'].astype(str) + '-' + df['loc3'].astype(str) + '-' + df['gene']
     headers = df.columns.tolist()
-    new_df = df.drop(df.columns[[0,1,2,3,4,5]], axis=1)
+    new_df = df.drop(df.columns[[0,1,2,3,4,5,6,7]], axis=1)
     new_headers = new_df.columns.tolist()
-    rearrange_headers = new_headers[-1:] + new_headers[:-1]
+    rearrange_headers = new_headers[-1:] + new_headers[:-2]
     filtered_new_df = new_df[rearrange_headers]
     transporse_df = filtered_new_df.transpose()
     transporse_df.columns = transporse_df.iloc[0]
@@ -125,7 +125,7 @@ def generate_coverage_dict():
         chr_headers = headers[2:]
         for row in reader:
             item = new_data_dict.get(row['new_sample'], dict())
-            item[row['percentage_above_x']] = [{i:row[i]} for i in chr_headers]
+            item[row['percentage_above_x']] = [{i:float(row[i])} for i in chr_headers]
             new_data_dict[row['new_sample']] = item
     return new_data_dict
 
@@ -139,22 +139,22 @@ def parse_csv_json(mad_dict, study):
     pprint.pprint(ppcollection)
     with open('temp_primer_file.csv') as csvfile:
         reader = csv.DictReader(csvfile)
+        header = reader.fieldnames
         for row in reader:
+            new_row = [{i:int(row[i])} for i in header if 'sample' not in i]
             try:
                 if mad_dict[row['sample']] and coverage_performance_dict[row['sample']]:
-                    value = {'primer_performance':row,
+                    value = {'primer_performance':new_row,
                              'coverage_performance':coverage_performance_dict[row['sample']],
                              'study': study, 'lane':mad_dict[row['sample']][0],
                              'flowcell':mad_dict[row['sample']][1],
                              'Indexes':mad_dict[row['sample']][2],
-                             'TotalReads':mad_dict[row['sample']][3],
-                             'RealignedReads': mad_dict[row['sample']][4],
-                             'ReadsInCaptureRegion': mad_dict[row['sample']][5],
-                             'Absolute_median_deviation': mad_dict[row['sample']][6],
+                             'TotalReads':float(mad_dict[row['sample']][3]),
+                             'RealignedReads': float(mad_dict[row['sample']][4]),
+                             'ReadsInCaptureRegion': float(mad_dict[row['sample']][5]),
+                             'Absolute_median_deviation': float(mad_dict[row['sample']][6]),
                              'CARRIERS_ID':mad_dict[row['sample']][7]}                             
-                ppcollection.insert(loads(dumps(value)))
-                sys.exit(0)                
-#                    pprint.pprint(value)
+                    ppcollection.insert(loads(dumps(value)))
             except KeyError:
                 pass
 

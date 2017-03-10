@@ -29,7 +29,7 @@ do
     esac
 done
 
-MEM="-l h_vmem=32G"
+MEM="-l h_vmem=12G"
 QUE="-q ngs-sec -l medp=TRUE"
 #QUE="-q lg-mem"
 
